@@ -20,6 +20,26 @@ on:
           - plan
           - apply
           - destroy
+      ami_id:
+        description: "ID de la AMI para la instancia EC2"
+        required: true
+        default: "ami-0440d3b780d96b29d"
+        type: string
+      instance_type:
+        description: "Tipo de instancia EC2"
+        required: true
+        default: "t3.micro"
+        type: choice
+        options:
+          - t3.micro
+          - t3.small
+          - t3.medium
+          - t2.micro
+      server_name:
+        description: "Nombre base del servidor web"
+        required: true
+        default: "nginx-server"
+        type: string
 
 permissions:
   id-token: write # Requerido para solicitar el token OIDC (WIF)
@@ -27,6 +47,9 @@ permissions:
 
 env:
   AWS_REGION: "us-east-1"
+  TF_VAR_ami_id: ${{ inputs.ami_id || 'ami-0440d3b780d96b29d' }}
+  TF_VAR_instance_type: ${{ inputs.instance_type || 't3.micro' }}
+  TF_VAR_server_name: ${{ inputs.server_name || 'nginx-server' }}
 
 jobs:
   terraform:
@@ -51,8 +74,8 @@ jobs:
 
       - name: Generate SSH Keys for EC2 Instances
         run: |
-          ssh-keygen -t rsa -b 2048 -f "nginx-server-dev.key" -N ""
-          ssh-keygen -t rsa -b 2048 -f "nginx-server-qa.key" -N ""
+          ssh-keygen -t rsa -b 2048 -f "${TF_VAR_server_name}-dev.key" -N ""
+          ssh-keygen -t rsa -b 2048 -f "${TF_VAR_server_name}-qa.key" -N ""
 
       - name: Terraform Format Check
         id: fmt
