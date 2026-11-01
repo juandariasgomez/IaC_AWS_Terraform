@@ -8,26 +8,6 @@ terraform {
   }
 }
 
-####### variables #######
-
-variable "ami_id" {
-  description = "ID de la AMI para la instancia EC2"
-  type        = string
-  default     = "ami-0440d3b780d96b29d"
-}
-
-variable "instance_type" {
-  description = "Tipo de instancia EC2"
-  type        = string
-  default     = "t3.micro"
-}
-
-variable "server_name" {
-  description = "Nombre base del servidor web"
-  type        = string
-  default     = "nginx-server"
-}
-
 ####### modulos #######
 module "nginx_server_dev" {
     source = "./nginx_server_module"
