@@ -1,0 +1,84 @@
+name: "Terraform Infrastructure CI/CD"
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Acción de Terraform a ejecutar"
+        required: true
+        default: "apply"
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+
+permissions:
+  id-token: write # Requerido para solicitar el token OIDC (WIF)
+  contents: read
+
+env:
+  AWS_REGION: "us-east-1"
+
+jobs:
+  terraform:
+    name: "Terraform Provisioning"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (WIF / OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: GitHubActions-Terraform
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.9.0"
+
+      - name: Generate SSH Keys for EC2 Instances
+        run: |
+          ssh-keygen -t rsa -b 2048 -f "nginx-server-dev.key" -N ""
+          ssh-keygen -t rsa -b 2048 -f "nginx-server-qa.key" -N ""
+
+      - name: Terraform Format Check
+        id: fmt
+        run: terraform fmt -check
+        continue-on-error: true
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        id: plan
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.action != 'destroy'
+        run: terraform plan -no-color -out=tfplan
+
+      - name: Terraform Apply
+        id: apply
+        if: (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
+        run: terraform apply -auto-approve tfplan
+
+      - name: Terraform Destroy
+        id: destroy
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy'
+        run: terraform destroy -auto-approve
+

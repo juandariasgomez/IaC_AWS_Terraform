@@ -10,6 +10,9 @@ The project is designed with **best practices**, separating configuration, modul
 
 ```text
 .
+├── .github/
+│   └── workflows/
+│       └── terraform.yml            # GitHub Actions CI/CD pipeline
 ├── .terraform/                     # Terraform working directory (ignored)
 ├── admin_user_accesskeys_*/         # AWS access keys (ignored)
 ├── nginx_server_module/             # Reusable Nginx EC2 module
