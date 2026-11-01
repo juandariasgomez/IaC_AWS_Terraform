@@ -21,4 +21,29 @@ The project is designed with **best practices**, separating configuration, modul
 │   └── 99.outputs.tf
 ├── .gitignore
 ├── main.tf                          # Root module
-├── README.md
+└── README.md
+```
+
+---
+
+## 🚀 Requisitos previos para ejecución local y Pipeline
+
+Antes de pasar al pipeline de despliegue, es necesario inicializar Terraform en local autenticándose primero en AWS y exportando las credenciales de sesión al entorno:
+
+1. **Iniciar sesión en AWS:**
+   ```bash
+   aws login
+   ```
+
+2. **Exportar las credenciales de AWS a variables de entorno:**
+   ```bash
+   eval $(aws.exe configure export-credentials --format env)
+   ```
+
+3. **Inicializar Terraform en local:**
+   ```bash
+   terraform init
+   ```
+
+Una vez completado el `terraform init` localmente, el entorno estará listo para proceder con el pipeline.
+
