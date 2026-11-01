@@ -2,8 +2,8 @@
 
 terraform {
   backend "s3" {
-    bucket         = "bucket-123asd123ad123"
-    key            = "infraestructura-terraform/terraform.tfstate"
+    bucket         = "bucket-devsecops2026"
+    key            = "terraform-infrastructure/terraform.tfstate"
     region         = "us-east-1"
   }
 }
